@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         DEPLOY_USER = "johnchuks"  // updated from "ubuntu"
-        DEPLOY_HOST = "172.18.245.183"
+        DEPLOY_HOST = "127.0.1.1"
         DEPLOY_PATH = "/var/www/html"
         BACKUP_PATH = "/var/www/backups"
         SSH_CREDENTIALS = "apache-prod-server"
