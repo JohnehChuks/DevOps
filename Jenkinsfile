@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        DEPLOY_USER = "johnchuks"  // updated from "ubuntu"
+        DEPLOY_USER = "johnchuks"
         DEPLOY_HOST = "127.0.1.1"
         DEPLOY_PATH = "/var/www/html"
         BACKUP_PATH = "/var/www/backups"
@@ -22,7 +22,7 @@ pipeline {
         stage('Checkout Code') {
             steps {
                 git branch: "${REPO_BRANCH}",
-                    url: 'https://github.com/JohnehChuks/DevOps.git', // updated repo URL
+                    url: 'https://github.com/JohnehChuks/DevOps.git',
                     credentialsId: 'github-creds'
             }
         }
@@ -51,7 +51,7 @@ pipeline {
         stage('Deploy') {
             steps {
                 sshagent([SSH_CREDENTIALS]) {
-                    sh """
+                    sh '''
                         echo "Backing up current site..."
                         ssh ${DEPLOY_USER}@${DEPLOY_HOST} '
                             mkdir -p ${BACKUP_PATH}
@@ -66,7 +66,7 @@ pipeline {
                         ssh ${DEPLOY_USER}@${DEPLOY_HOST} "sudo systemctl restart apache2"
 
                         echo "Deployment completed!"
-                    """
+                    '''
                 }
             }
         }
@@ -79,7 +79,7 @@ pipeline {
         failure {
             echo "Deployment failed! Attempting rollback..."
             sshagent([SSH_CREDENTIALS]) {
-                sh """
+                sh '''
                     ssh ${DEPLOY_USER}@${DEPLOY_HOST} '
                         PREV=$(ls -1t ${BACKUP_PATH}/html.bak.*.tar.gz | head -n1 || true)
                         if [ -n "$PREV" ]; then
@@ -90,7 +90,7 @@ pipeline {
                             echo "No backup available"
                         fi
                     '
-                """
+                '''
             }
         }
         always {
@@ -98,3 +98,4 @@ pipeline {
         }
     }
 }
+
