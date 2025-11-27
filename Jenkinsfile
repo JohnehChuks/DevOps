@@ -1,4 +1,4 @@
-pipeline {
+kpipeline {
     agent any
 
     environment {
@@ -43,8 +43,7 @@ pipeline {
                 sh '''
                     rm -rf build
                     mkdir -p build
-                    shopt -s extglob
-                    cp -r !(build) build/
+                    cp -r * build/
                 '''
                 archiveArtifacts artifacts: 'build/**', fingerprint: true
             }
@@ -52,7 +51,7 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                sh """
+                sh '''
                     echo "Backing up current site..."
                     ssh -i ${SSH_KEY} ${DEPLOY_USER}@${DEPLOY_HOST} '
                         mkdir -p ${BACKUP_PATH}
@@ -61,13 +60,13 @@ pipeline {
                     '
 
                     echo "Deploying new version..."
-                    rsync -avz --delete -e "ssh -i ${SSH_KEY}" build/ ${DEPLOY_USER}@${DEPLOY_HOST}:${DEPLOY_PATH}
+                    rsync -avz -e "ssh -i ${SSH_KEY}" --delete build/ ${DEPLOY_USER}@${DEPLOY_HOST}:${DEPLOY_PATH}
 
                     echo "Restarting Apache..."
                     ssh -i ${SSH_KEY} ${DEPLOY_USER}@${DEPLOY_HOST} "sudo systemctl restart apache2"
 
                     echo "Deployment completed!"
-                """
+                '''
             }
         }
     }
@@ -78,21 +77,19 @@ pipeline {
         }
         failure {
             echo "Deployment failed! Attempting rollback..."
-            sh """
-                ssh -i ${SSH_KEY} ${DEPLOY_USER}@${DEPLOY_HOST} '
-                    PREV=$(ls -1t ${BACKUP_PATH}/html.bak.*.tar.gz | head -n1 || true)
-                    if [ -n "$PREV" ]; then
-                        echo "Restoring backup $PREV"
-                        sudo tar -xzf "$PREV" -C /
-                        sudo systemctl restart apache2
-                    else
-                        echo "No backup available"
-                    fi
-                '
-            """
+            sh '''
+                PREV=$(ssh -i ${SSH_KEY} ${DEPLOY_USER}@${DEPLOY_HOST} "ls -1t ${BACKUP_PATH}/html.bak.*.tar.gz | head -n1 || true")
+                if [ -n "$PREV" ]; then
+                    echo "Restoring backup $PREV"
+                    ssh -i ${SSH_KEY} ${DEPLOY_USER}@${DEPLOY_HOST} "sudo tar -xzf $PREV -C /; sudo systemctl restart apache2"
+                else
+                    echo "No backup available"
+                fi
+            '''
         }
         always {
             cleanWs()
         }
     }
 }
+
