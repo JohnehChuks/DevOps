@@ -10,7 +10,7 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                sh 'cd dockerfolder && docker build -t MydockerImageName .'
+                sh 'cd dockfolder && docker build -t MydockerImageName .'
             }
         }
 
