@@ -48,11 +48,16 @@ pipeline {
                 git url: 'https://github.com/JohnehChuks/DevOps.git', credentialsId: 'github-pat'
             }
         }
+
+        4**  makesure you add docker to jenkins group:
+         sudo usermod -aG docker jenkins
+         sudo systemctl restart jenkins
+         use this to confirm: groups jenkins
         */
 
         stage('Build Docker Image') {
             steps {
-                sh 'cd dockfolder && docker build -t MydockerImageName .'
+                sh 'cd dockfolder && docker build -t mydockerimagename .'
             }
         }
 
@@ -60,7 +65,7 @@ pipeline {
             steps {
                 sh 'docker stop DockContainer || true'
                 sh 'docker rm DockContainer || true'
-                sh 'docker run -d --name DockContainer -p 8080:80 MydockerImageName'
+                sh 'docker run -d --name DockContainer -p 8080:80 mydockerimagename'
             }
         }
     }
