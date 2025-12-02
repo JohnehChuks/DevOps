@@ -65,7 +65,7 @@ pipeline {
             steps {
                 sh 'docker stop DockContainer || true'
                 sh 'docker rm DockContainer || true'
-                sh 'docker run -d --name DockContainer -p 8080:80 mydockerimagename'
+                sh 'docker run -d --name DockContainer -p 8050:80 mydockerimagename'
             }
         }
     }
